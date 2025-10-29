@@ -1,72 +1,38 @@
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases, Query } from "node-appwrite"
 
-// Appwrite Functions automatically provide certain environment variables.
-// These are used for the Client configuration.
-
-
-/**
- * Appwrite Function entry point.
- * @param {object} context The execution context object provided by Appwrite.
- */
-module.exports = async (context) => {
-  // 1. Validate environment variables
-  if (!endpoint || !projectId || !apiKey) {
-    context.log('Error: Appwrite Function environment variables (ENDPOINT, PROJECT_ID, API_KEY) must be set.');
-    return context.res.json({ success: false, message: 'Missing Appwrite client configuration.' }, 500);
-  }
-
-  if (!DATABASE_ID || !COLLECTION_ID) {
-    context.log('Error: Database ID (DB_ID) and Collection ID (COL_ID) environment variables must be set.');
-    return context.res.json({ success: false, message: 'Missing database/collection configuration.' }, 500);
-  }
-
-  // 2. Initialize Appwrite Client
-  const client = new Client()
-    .setEndpoint(endpoint)
-    .setProject(projectId)
-    .setKey(apiKey); // Ensure this API key has 'databases.read' permission
-
-  const databases = new Databases(client);
-
+export default async ({ req, res, log, error }) => {
   try {
-    context.log(`Attempting to fetch 5 documents from DB: ${DATABASE_ID}, Collection: ${COLLECTION_ID}...`);
+    // Initialize Appwrite client
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_API_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY)
 
-    // 3. Execute the Query: Fetch documents with a limit of 5
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTION_ID,
-      [
-        Query.limit(5) // Limit the result to 5 documents
-      ]
-    );
+    // Initialize Databases service
+    const databases = new Databases(client)
 
-    context.log(`Successfully fetched ${response.documents.length} documents.`);
+    // Query the free_plan table/collection
+    // Replace 'your_database_id' and 'free_plan' with your actual database and collection IDs
+    const response = await databases.listDocuments(process.env.APPWRITE_DATABASE_ID, "free_plan", [
+      // Limit to 10 rows
+      Query.limit(10),
+    ])
 
-    // 4. Print results to the console (standard output/logs)
-    context.log("--- Fetched Documents (First 5) ---");
-    response.documents.forEach((doc, index) => {
-      // Print the document ID and any relevant fields (like 'name' or a small snippet)
-      context.log(`[${index + 1}] ID: ${doc.$id}, Content Sample: ${JSON.stringify(doc).substring(0, 100)}...`);
-    });
-    context.log("-----------------------------------");
+    log("Successfully fetched free plans:", response.documents.length)
 
-    // 5. Return a successful response
-    return context.res.json({
+    return res.json({
       success: true,
-      message: `Successfully retrieved ${response.documents.length} documents. Results are in the function logs.`,
-      total: response.total,
-      documentIds: response.documents.map(d => d.$id)
-    });
-
-  } catch (error) {
-    context.log('Error fetching documents:');
-    context.log(error.message);
-    
-    // Return an error response
-    return context.res.json({
-      success: false,
-      message: 'Failed to fetch documents.',
-      error: error.message
-    }, 500);
+      count: response.documents.length,
+      data: response.documents,
+    })
+  } catch (err) {
+    error("Error fetching free plans:", err.message)
+    return res.json(
+      {
+        success: false,
+        error: err.message,
+      },
+      500,
+    )
   }
-};
+}
