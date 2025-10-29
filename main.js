@@ -2,14 +2,7 @@ import { Client, Databases, Query } from 'node-appwrite';
 
 // Appwrite Functions automatically provide certain environment variables.
 // These are used for the Client configuration.
-const endpoint = 'https://nyc.cloud.appwrite.io/v1';
-const projectId = '68a184da002e018215ac'
-const apiKey = 'standard_5f14eaacfef6c7ff4f9476441b0d49b82bc2f8d3e3fb5b8538aa774c95c7a629a3f7922a5ea8c66c3be3b90705c2e57a9af08dddb402c7630e5a8db800db677cb646318e0ccbf7d05170c2b6310d273512f3b7771e0165196b54475e5575d0322d0a9e67c8f38367e01290eeb5e4e28db1aa1f980c4f2dab311b31a0bf642a60'; // Requires read access to the database
 
-// You must set these as environment variables when configuring your function
-// in the Appwrite Console (e.g., DB_ID=your_database_id, COL_ID=your_collection_id)
-const DATABASE_ID = '68a29509003a98c08fcc'
-const COLLECTION_ID = '68a759670015ef944a21'
 
 /**
  * Appwrite Function entry point.
